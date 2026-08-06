@@ -1,3 +1,4 @@
+import { useTheme } from "@/contexts/theme";
 import { Text, TouchableOpacity } from "react-native";
 
 type Props = {
@@ -6,11 +7,12 @@ type Props = {
 }
 
 export const Button = (props: Props) => {
+    const { theme } = useTheme()
     return (
         <TouchableOpacity
             onPress={props.onPress}
             style={{
-                backgroundColor: "red",
+                backgroundColor: theme.button,
                 width: 200,
                 height: 100,
                 borderRadius: 20,

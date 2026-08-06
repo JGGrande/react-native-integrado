@@ -2,7 +2,8 @@
 import { Button } from "@/components/button";
 import { ProfilePicture } from "@/components/profile-picture";
 import { H1, H2 } from "@/components/text";
-import { useState } from "react";
+import { useTheme } from "@/contexts/theme";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 type Pessoa = {
@@ -36,45 +37,38 @@ const pessoas: Pessoa[] = [
 ]
 
 export default function Index() {
-  const [pessoa, setPessoa] = useState<Pessoa>(joao);
+  const [pessoa, setPessoa] = useState<Pessoa | null>(null);
+  const { toggleTheme, theme } = useTheme()
 
-  const trocarPessoa = (nomePessoa: "joao" | "pedro" | "max") => {
-    if (nomePessoa === "joao") {
-      setPessoa(joao)
-    }
-
-    if (nomePessoa === "pedro") {
-      setPessoa(pedro)
-    }
-
-    if (nomePessoa === "max") {
-      setPessoa(max)
-    }
+  const gerarPessoaAleatoria = () => {
+    const randomIndice = Math.floor(Math.random() * pessoas.length)
+    const pessoa = pessoas[randomIndice]
+    setPessoa(pessoa)
   }
 
+  useEffect(() => {
+    gerarPessoaAleatoria()
+  }, [])
+
+
   return (
-    <ScrollView>
-      <View
-        style={styles.container}
-      >
-        <ProfilePicture
-          fotoUrl={pessoa.fotoURL}
-        />
+      <ScrollView>
+        <View
+          style={
+            [styles.container, { backgroundColor: theme.background }]
+          }
+        >
+          <ProfilePicture
+            fotoUrl={pessoa?.fotoURL ?? ""}
+          />
 
-        <H1>{pessoa.nome}</H1>
-        <H2>{pessoa.idade} Anos</H2>
+          <H1>{pessoa?.nome}</H1>
+          <H2>{pessoa?.idade} Anos</H2>
 
-        <Button
-          onPress={() => trocarPessoa("joao")}
-        >Setar João</Button>
-        <Button
-          onPress={() => trocarPessoa("pedro")}
-        >Setar Pedro</Button>
-        <Button
-          onPress={() => trocarPessoa("max")}
-        >Setar Maxwell</Button>
-      </View>
-    </ScrollView>
+          <Button onPress={gerarPessoaAleatoria}>Pessoa aleatória</Button>
+          <Button onPress={toggleTheme}>Trocar tema</Button>
+        </View>
+      </ScrollView>
   );
 }
 
@@ -83,6 +77,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
   }
 })
