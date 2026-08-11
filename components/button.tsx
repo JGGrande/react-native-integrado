@@ -7,25 +7,25 @@ type Props = {
 }
 
 export const Button = (props: Props) => {
-    const { theme } = useTheme()
+    const { theme, font, fontSize, space, radius } = useTheme()
     return (
         <TouchableOpacity
             onPress={props.onPress}
             style={{
-                backgroundColor: theme.button,
+                backgroundColor: theme.primary,
                 width: 200,
                 height: 100,
-                borderRadius: 20,
+                borderRadius: radius.lg,
                 justifyContent: "center",
                 alignItems: "center",
-                marginBottom: 20
+                marginBottom: space[5]
             }}
         >
             <Text
                 style={{
-                    color: theme.text,
-                    fontWeight: "bold",
-                    fontSize: 20,
+                    color: theme.primaryText,
+                    fontFamily: font.baseBold,
+                    fontSize: fontSize.h4,
                 }}
             >{props.children}</Text>
         </TouchableOpacity>

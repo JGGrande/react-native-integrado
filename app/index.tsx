@@ -1,10 +1,9 @@
-
 import { Button } from "@/components/button";
 import { ProfilePicture } from "@/components/profile-picture";
 import { H1, H2 } from "@/components/text";
 import { useTheme } from "@/contexts/theme";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 type Pessoa = {
   nome: string;
@@ -38,7 +37,7 @@ const pessoas: Pessoa[] = [
 
 export default function Index() {
   const [pessoa, setPessoa] = useState<Pessoa | null>(null);
-  const { toggleTheme, theme } = useTheme()
+  const { toggleTheme, theme, space } = useTheme()
 
   const gerarPessoaAleatoria = () => {
     const randomIndice = Math.floor(Math.random() * pessoas.length)
@@ -52,23 +51,27 @@ export default function Index() {
 
 
   return (
-    <ScrollView>
-      <View
-        style={
-          [styles.container, { backgroundColor: theme.background }]
-        }
-      >
-        <ProfilePicture
-          fotoUrl={pessoa?.fotoURL ?? ""}
-        />
+    <View
+      style={
+        [
+          styles.container,
+          {
+            backgroundColor: theme.bodyBg,
+            padding: space[6],
+            gap: space[2]
+          }]
+      }
+    >
+      <ProfilePicture
+        fotoUrl={pessoa?.fotoURL ?? ""}
+      />
 
-        <H1>{pessoa?.nome}</H1>
-        <H2>{pessoa?.idade} Anos</H2>
+      <H1>{pessoa?.nome}</H1>
+      <H2>{pessoa?.idade} Anos</H2>
 
-        <Button onPress={gerarPessoaAleatoria}>Pessoa aleatória</Button>
-        <Button onPress={toggleTheme}>Trocar tema</Button>
-      </View>
-    </ScrollView>
+      <Button onPress={gerarPessoaAleatoria}>Pessoa aleatória</Button>
+      <Button onPress={toggleTheme}>Trocar tema</Button>
+    </View>
   );
 }
 

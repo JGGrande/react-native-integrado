@@ -1,3 +1,4 @@
+import { useTheme } from "@/contexts/theme";
 import { Image } from "expo-image";
 import { View } from "react-native";
 
@@ -6,13 +7,16 @@ type Props = {
 }
 
 export const ProfilePicture = (props: Props) => {
+    const { theme, space, radius } = useTheme()
     return (
         <View
             style={{
                 width: 200,
                 height: 200,
-                borderRadius: 50,
-                marginBottom: 20,
+                borderRadius: radius.circle,
+                marginBottom: space[5],
+                borderWidth: 1,
+                borderColor: theme.borderColor,
                 overflow: "hidden"
             }}
         >
