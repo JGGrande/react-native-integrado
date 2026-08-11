@@ -1,13 +1,16 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+import { useColorScheme } from "react-native"
 
 const DARK = {
   background: "#070709",
   button: "#C8FF00",
+  text: "#FFF"
 }
 
 const LIGHT = {
   background: "#F4F4EF",
-  button: "#0F0F1A"
+  button: "#0F0F1A",
+  text: "#454ac8"
 }
 
 type ThemeColor = "light" | "dark"
@@ -25,7 +28,8 @@ type Props = {
 }
 
 export const ThemeProvider = ({ children }: Props) => {
-    const [color, setColor] = useState<ThemeColor>("dark") // light e dark
+    const colorSchema = useColorScheme()
+    const [color, setColor] = useState<ThemeColor>(colorSchema as ThemeColor) // light e dark
     const [theme, setTheme] = useState(DARK); // Hexadecimal
 
     const toggleTheme = () => {
@@ -39,6 +43,14 @@ export const ThemeProvider = ({ children }: Props) => {
             setColor("light")
         }
     }
+
+    useEffect(() => {
+        if(colorSchema === "light") {
+            setTheme(LIGHT)
+        }else {
+            setTheme(DARK)
+        }
+    }, [colorSchema])
 
     return (
         <ThemeContext.Provider value={{

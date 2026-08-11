@@ -52,23 +52,23 @@ export default function Index() {
 
 
   return (
-      <ScrollView>
-        <View
-          style={
-            [styles.container, { backgroundColor: theme.background }]
-          }
-        >
-          <ProfilePicture
-            fotoUrl={pessoa?.fotoURL ?? ""}
-          />
+    <ScrollView>
+      <View
+        style={
+          [styles.container, { backgroundColor: theme.background }]
+        }
+      >
+        <ProfilePicture
+          fotoUrl={pessoa?.fotoURL ?? ""}
+        />
 
-          <H1>{pessoa?.nome}</H1>
-          <H2>{pessoa?.idade} Anos</H2>
+        <H1>{pessoa?.nome}</H1>
+        <H2>{pessoa?.idade} Anos</H2>
 
-          <Button onPress={gerarPessoaAleatoria}>Pessoa aleatória</Button>
-          <Button onPress={toggleTheme}>Trocar tema</Button>
-        </View>
-      </ScrollView>
+        <Button onPress={gerarPessoaAleatoria}>Pessoa aleatória</Button>
+        <Button onPress={toggleTheme}>Trocar tema</Button>
+      </View>
+    </ScrollView>
   );
 }
 

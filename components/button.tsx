@@ -23,7 +23,7 @@ export const Button = (props: Props) => {
         >
             <Text
                 style={{
-                    color: "white",
+                    color: theme.text,
                     fontWeight: "bold",
                     fontSize: 20,
                 }}
