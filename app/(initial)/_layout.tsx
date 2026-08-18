@@ -1,9 +1,22 @@
+import { useTheme } from "@/contexts/theme"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { Tabs } from "expo-router"
 
 export default function Layout() {
+    const { theme } = useTheme()
+
     return (
-        <Tabs>
+        <Tabs
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: theme.primary,
+                tabBarInactiveTintColor: theme.secondaryColor,
+                tabBarStyle: {
+                    backgroundColor: theme.secondaryBg,
+                    borderTopColor: theme.borderColor,
+                },
+            }}
+        >
             <Tabs.Screen 
                 name="home"
                 options={{
@@ -16,13 +29,6 @@ export default function Layout() {
                 options={{
                     title: "Profile",
                     tabBarIcon: ({ color }) => <FontAwesome size={18} name="user" color={color} />
-                }}
-            />
-            <Tabs.Screen 
-                name="pastel"
-                options={{
-                    title: "Pastel no header",
-                    tabBarIcon: ({ color }) => <FontAwesome size={18} name="hand-grab-o" color={color} />
                 }}
             />
         </Tabs>

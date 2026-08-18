@@ -22,7 +22,7 @@ export default function Login() {
             return
         }
 
-        if (email === "admin" && senha === "murilo123") {
+        if (email === "admin" && senha === "admin") {
             router.replace("/home")
         }else {
             Alert.alert("Email ou senha inválidos")
