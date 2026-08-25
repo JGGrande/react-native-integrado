@@ -3,7 +3,7 @@ import { H1 } from "@/components/text";
 import { useTheme } from "@/contexts/theme";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
 
 export default function Login() {
     const { theme, radius, fontSize } = useTheme()
@@ -12,7 +12,7 @@ export default function Login() {
     const router = useRouter()
 
     const login = () => {
-        if (!email.trim()){
+        if (!email.trim()) {
             Alert.alert("Erro", "Campo email é obrigatório")
             return
         }
@@ -24,7 +24,7 @@ export default function Login() {
 
         if (email === "admin" && senha === "admin") {
             router.replace("/home")
-        }else {
+        } else {
             Alert.alert("Email ou senha inválidos")
         }
 
@@ -32,7 +32,8 @@ export default function Login() {
 
 
     return (
-        <View 
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={[
                 styles.container,
                 {
@@ -78,7 +79,8 @@ export default function Login() {
 
             <Button onPress={login}>Entrar</Button>
 
-        </View>
+        </KeyboardAvoidingView>
+
     )
 }
 

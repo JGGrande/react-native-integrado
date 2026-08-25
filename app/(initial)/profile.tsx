@@ -2,9 +2,11 @@ import { Button } from "@/components/button";
 import { ProfilePicture } from "@/components/profile-picture";
 import { H1, H2 } from "@/components/text";
 import { useTheme } from "@/contexts/theme";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Alert, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Pessoa = {
   nome: string;
@@ -18,42 +20,37 @@ const joao: Pessoa = {
   fotoURL: "https://avatars.githubusercontent.com/u/106830297?v=4"
 }
 
-const pedro: Pessoa = {
-  nome: "Pedro",
-  idade: 23,
-  fotoURL: "https://s2-ge.glbimg.com/PZSI3bS8HNZrEk_sTb3KmScg3IQ=/1920x0/filters:format(jpeg)/https://i.s3.glbimg.com/v1/AUTH_bc8228b6673f488aa253bbcb03c80ec5/internal_photos/bs/2025/y/s/EtLVJBQKCLKkovgELPkA/thumbnail-dur-3636.jpg"
-}
-
-const max: Pessoa = {
-  nome: "Maxwell",
-  idade: 29,
-  fotoURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Dwayne_Johnson_at_the_2009_Tribeca_Film_Festival.jpg/250px-Dwayne_Johnson_at_the_2009_Tribeca_Film_Festival.jpg"
-}
-
-const pessoas: Pessoa[] = [
-  joao,
-  pedro,
-  max
-]
 
 export default function Profile() {
-  const [pessoa, setPessoa] = useState<Pessoa | null>(null);
+  const [pessoa, setPessoa] = useState<Pessoa | null>(joao);
   const { toggleTheme, theme, space } = useTheme()
   const router = useRouter()
 
-  const gerarPessoaAleatoria = () => {
-    const randomIndice = Math.floor(Math.random() * pessoas.length)
-    const pessoa = pessoas[randomIndice]
-    setPessoa(pessoa)
+  const selectUserPhoto = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
+
+    if (!permissionResult.granted) {
+      Alert.alert("Erro", "Preciso de permissão para acessar a galeria...")
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1
+    })
+
+
+    setPessoa({
+      nome: "Joao",
+      idade: 31,
+      fotoURL: result.assets![0].uri
+    })
   }
 
-  useEffect(() => {
-    gerarPessoaAleatoria()
-  }, [])
-
-
   return (
-    <View
+    <SafeAreaView
       style={
         [
           styles.container,
@@ -64,17 +61,17 @@ export default function Profile() {
           }]
       }
     >
-      <ProfilePicture
-        fotoUrl={pessoa?.fotoURL ?? ""}
-      />
+        <ProfilePicture
+          fotoUrl={pessoa?.fotoURL ?? ""}
+        />
 
-      <H1>{pessoa?.nome}</H1>
-      <H2>{pessoa?.idade} Anos</H2>
+        <H1>{pessoa?.nome}</H1>
+        <H2>{pessoa?.idade} Anos</H2>
 
-      <Button onPress={gerarPessoaAleatoria}>Pessoa aleatória</Button>
-      <Button onPress={toggleTheme}>Trocar tema</Button>
-      <Button onPress={() => router.replace("/login")}>Deslogar</Button>
-    </View>
+        <Button onPress={selectUserPhoto}>Selecionar foto</Button>
+        <Button onPress={toggleTheme}>Trocar tema</Button>
+        <Button onPress={() => router.replace("/login")}>Deslogar</Button>
+    </SafeAreaView>
   );
 }
 
