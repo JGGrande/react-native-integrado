@@ -1,9 +1,12 @@
 import { Button } from "@/components/button";
 import { H1 } from "@/components/text";
 import { useTheme } from "@/contexts/theme";
+import { login } from "@/services/auth";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet, TextInput } from "react-native";
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from "react";
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
+
 
 export default function Login() {
     const { theme, radius, fontSize } = useTheme()
@@ -11,7 +14,17 @@ export default function Login() {
     const [senha, setSenha] = useState('')
     const router = useRouter()
 
-    const login = () => {
+    useEffect(() => {
+        const token = SecureStore.getItem("token")
+
+        if (token) {
+            router.replace("/home")
+        }
+    }, [])
+
+
+
+    const onPressLogin = async () => {
         if (!email.trim()) {
             Alert.alert("Erro", "Campo email é obrigatório")
             return
@@ -22,7 +35,10 @@ export default function Login() {
             return
         }
 
-        if (email === "admin" && senha === "admin") {
+        const token = await login(email, senha)
+
+        if (token) {
+            await SecureStore.setItemAsync("token", token)
             router.replace("/home")
         } else {
             Alert.alert("Email ou senha inválidos")
@@ -77,8 +93,14 @@ export default function Login() {
                 secureTextEntry
             />
 
-            <Button onPress={login}>Entrar</Button>
+            <Button onPress={onPressLogin}>Entrar</Button>
 
+            <TouchableOpacity onPress={() => router.push("/register")}>
+                <Text style={{
+                    color: theme.secondaryColor,
+                    fontSize: fontSize.base
+                }}>Não tem conta? cadastre-se</Text>
+            </TouchableOpacity>
         </KeyboardAvoidingView>
 
     )

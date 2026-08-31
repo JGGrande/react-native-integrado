@@ -4,6 +4,7 @@ import { H1, H2 } from "@/components/text";
 import { useTheme } from "@/contexts/theme";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -49,6 +50,11 @@ export default function Profile() {
     })
   }
 
+  const logout = async () => {
+    await SecureStore.deleteItemAsync("token")
+    router.replace("/login")
+  }
+
   return (
     <SafeAreaView
       style={
@@ -70,7 +76,7 @@ export default function Profile() {
 
         <Button onPress={selectUserPhoto}>Selecionar foto</Button>
         <Button onPress={toggleTheme}>Trocar tema</Button>
-        <Button onPress={() => router.replace("/login")}>Deslogar</Button>
+        <Button onPress={logout}>Deslogar</Button>
     </SafeAreaView>
   );
 }

@@ -1,0 +1,675 @@
+openapi: 3.0.3
+info:
+  title: Eazy Ticket API
+  version: 1.0.0
+  description: API de gerenciamento de clientes, eventos, ingressos e checkout.
+servers:
+- url: https://eazy-ticket-backend.infra.bytework.app.br/
+tags:
+- name: Health Check
+- name: Autenticação
+- name: Público
+- name: Clientes
+- name: Eventos
+- name: Ingressos
+- name: Checkout
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: João Silva
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          example: joao@email.com
+    CustomerAuthRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        password:
+          type: string
+          minLength: 6
+          maxLength: 100
+    RegisterRequest:
+      type: object
+      required:
+      - name
+      - email
+      - password
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        password:
+          type: string
+          minLength: 6
+          maxLength: 100
+    AuthResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: João Silva
+        email:
+          type: string
+          format: email
+          example: joao@email.com
+        token:
+          type: string
+          example: <jwt>
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Show de Rock
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: '...'
+        initialDate:
+          type: string
+          format: date-time
+          example: '2026-06-01T20:00:00.000Z'
+        finalDate:
+          type: string
+          format: date-time
+          example: '2026-06-02T00:00:00.000Z'
+        location:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Arena XYZ
+        maxTickets:
+          type: integer
+          minimum: 1
+          example: 500
+        ticketPrice:
+          type: number
+          format: double
+          minimum: 0
+          example: 150.0
+        photos:
+          type: array
+          items:
+            type: string
+            format: uri
+          example:
+          - https://host/uploads/arquivo.jpg
+    EventRequest:
+      type: object
+      required:
+      - name
+      - description
+      - location
+      - initialDate
+      - finalDate
+      - maxTickets
+      - ticketPrice
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        location:
+          type: string
+          minLength: 1
+          maxLength: 200
+        initialDate:
+          type: string
+          format: date-time
+          description: ISO 8601 com offset.
+        finalDate:
+          type: string
+          format: date-time
+          description: ISO 8601 com offset; deve ser após initialDate.
+        maxTickets:
+          type: integer
+          minimum: 1
+        ticketPrice:
+          type: number
+          format: double
+          minimum: 0
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        eventId:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: AB3X-0001-0001
+    TicketWithEvent:
+      allOf:
+      - $ref: '#/components/schemas/Ticket'
+      - type: object
+        properties:
+          event:
+            $ref: '#/components/schemas/Event'
+    CheckoutRequest:
+      type: object
+      required:
+      - eventId
+      - ticketCount
+      - paymentMethod
+      properties:
+        eventId:
+          type: integer
+          minimum: 1
+        ticketCount:
+          type: integer
+          minimum: 1
+        paymentMethod:
+          type: string
+          enum:
+          - credit_card
+          - debit_card
+          - pix
+    CheckoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Tickets purchased successfully
+        statusCode:
+          type: integer
+          example: 201
+        totalPrice:
+          type: number
+          format: double
+          example: 300.0
+        paymentMethod:
+          type: string
+          enum:
+          - credit_card
+          - debit_card
+          - pix
+        tickets:
+          type: array
+          items:
+            type: object
+            properties:
+              eventId:
+                type: integer
+                example: 1
+              customerId:
+                type: integer
+                example: 1
+              code:
+                type: string
+                example: AB3X-0001-0001
+paths:
+  /health:
+    get:
+      tags:
+      - Health Check
+      summary: Verifica se o servidor está em execução
+      responses:
+        '200':
+          description: Servidor em execução.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  PID:
+                    type: integer
+                    example: 1234
+  /auth/customer/login:
+    post:
+      tags:
+      - Autenticação
+      summary: Autentica um cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerAuthRequest'
+      responses:
+        '200':
+          description: Login realizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid email or password
+        '422':
+          description: Falha na validação do body
+  /auth/customer/register:
+    post:
+      tags:
+      - Autenticação
+      summary: Cria um novo cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Cliente criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Email already exists
+        '422':
+          description: Falha na validação do body
+  /public/events:
+    get:
+      tags:
+      - Público
+      summary: Lista eventos públicos
+      parameters:
+      - name: withExpired
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Se true, inclui eventos já encerrados.
+      responses:
+        '200':
+          description: Lista de eventos.
+          content:
+            application/json:
+              schema: &id001
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+  /public/events/{id}:
+    get:
+      tags:
+      - Público
+      summary: Busca evento público por ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do evento
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Evento encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+  /customers:
+    get:
+      tags:
+      - Clientes
+      summary: Lista todos os clientes
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de clientes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+  /customers/{id}:
+    get:
+      tags:
+      - Clientes
+      summary: Busca cliente por ID
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do cliente
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Cliente encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+    put:
+      tags:
+      - Clientes
+      summary: Atualiza cliente
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do cliente
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - email
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                  maxLength: 100
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 100
+      responses:
+        '200':
+          description: Cliente atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+        '409':
+          description: Email already exists for another customer
+        '422':
+          description: Falha na validação do body
+    delete:
+      tags:
+      - Clientes
+      summary: Remove cliente
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do cliente
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Cliente removido.
+        '404':
+          description: Customer not found
+  /events:
+    post:
+      tags:
+      - Eventos
+      summary: Cria um evento
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '201':
+          description: Evento criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Initial date cannot be in the past; Final date must be after
+            initial date
+        '422':
+          description: Falha na validação do body
+    get:
+      tags:
+      - Eventos
+      summary: Lista eventos
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: withExpired
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Se true, inclui eventos encerrados.
+      responses:
+        '200':
+          description: Lista de eventos.
+          content:
+            application/json:
+              schema: *id001
+  /events/{id}:
+    get:
+      tags:
+      - Eventos
+      summary: Busca evento por ID
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do evento
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Evento encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+    put:
+      tags:
+      - Eventos
+      summary: Atualiza evento
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do evento
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '200':
+          description: Evento atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Initial date cannot be in the past; Final date must be after
+            initial date; Event cannot be updated because it has already finished;
+            Cannot update event because the new max tickets is less than the total
+            tickets sold
+        '404':
+          description: Event not found
+        '422':
+          description: Falha na validação do body
+    delete:
+      tags:
+      - Eventos
+      summary: Remove evento
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do evento
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Evento removido.
+        '400':
+          description: Event cannot be deleted because it has already finished; Cannot
+            delete event because it has tickets sold
+        '404':
+          description: Event not found
+  /events/{id}/images:
+    patch:
+      tags:
+      - Eventos
+      summary: Adiciona uma imagem ao evento
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do evento
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: JPEG, PNG, WebP ou GIF. Máx. 5 MB.
+      responses:
+        '204':
+          description: Imagem adicionada.
+        '400':
+          description: Image file is required; Tipo de arquivo inválido
+  /events/{id}/images/{imageId}:
+    delete:
+      tags:
+      - Eventos
+      summary: Remove uma imagem do evento
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID do evento
+        schema:
+          type: integer
+      - name: imageId
+        in: path
+        required: true
+        description: ID da imagem
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Imagem removida.
+        '404':
+          description: Event photo not found
+  /tickets:
+    get:
+      tags:
+      - Ingressos
+      summary: Lista os ingressos do cliente autenticado
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Ingressos do cliente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketWithEvent'
+  /checkout:
+    post:
+      tags:
+      - Checkout
+      summary: Compra ingressos para um evento
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '201':
+          description: Compra realizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        '400':
+          description: Event has already started; Only N tickets available for this
+            event
+        '404':
+          description: Event not found
+        '422':
+          description: Falha na validação do body
